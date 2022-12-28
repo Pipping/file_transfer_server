@@ -28,33 +28,29 @@ class Parser extends Thread {
                 String command = "";
                 int byt = 0;
                 while (true) {
+                    System.out.println(command);
                     byt = from_cli.read();
+                    
                     if ((char) byt != ' ') {
                         command += (char) byt;
-                    } else {
+                        if(command.equals("list"))break;
+                    } 
+                    
+                    else {
                         break;
                     }
                 }
-                System.out.println(command);
+                System.out.println("command is::"+command);
                 if (command.equals("send")) {
                     byte[] buffer = new byte[4 * 1024];
                     while (true) {
 
-                        String buf = "";
-                        int a = 0;
-                        a = from_cli.read();
-                        buf += (char) a;
-                        if ((char) a == 'e')
-                            for (int i = 0; i < 2; ++i) {
-                                a = from_cli.read();
-                                buf += (char) a;
-                            }
-                        // System.out.println("buf is::"+buf);
-                        if (buf.equals("end")) {
-                            break;
-                        } else {
-                            filename += buf;
-                        }
+                        int a=0;
+                        a=from_cli.read();
+                        if((char)a==';')break;
+                        
+                        System.out.println((char)a);
+                        filename+=(char)a;
 
                     }
                     long size = from_cli.readLong();
@@ -75,24 +71,16 @@ class Parser extends Thread {
                 } else if (command.equals("get")) {
                     while (true) {
 
-                        String buf = "";
-                        int a = 0;
-                        a = from_cli.read();
-                        buf += (char) a;
-                        if ((char) a == 'e')
-                            for (int i = 0; i < 2; ++i) {
-                                a = from_cli.read();
-                                buf += (char) a;
-                            }
-                        // System.out.println("buf is::"+buf);
-                        if (buf.equals("end")) {
-                            break;
-                        } else {
-                            filename += buf;
-                        }
+                        int a=0;
+                        a=from_cli.read();
+                        if((char)a==';')break;
+                        
+                        System.out.println((char)a);
+                        filename+=(char)a;
+                        //System.out.println("fname::"+filename);
 
                     }
-                    System.out.println("filename is ::" + filename);
+                    //System.out.println("filename is ::" + filename);
                     File file = new File(filename);
                     FileInputStream finp = new FileInputStream(file);
 
@@ -108,6 +96,24 @@ class Parser extends Thread {
                     System.out.println("file sent!");
                     finp.close();
 
+                }
+                else if(command.equals("list")){
+                    System.out.println("listing the content now");
+                    File folder = new File(".");
+                    File[] listOfFiles = folder.listFiles();
+                    String content="";
+                    for (int i = 0; i < listOfFiles.length; i++) {
+                        if (listOfFiles[i].isFile()) {
+                            content+="File " + listOfFiles[i].getName()+'\n';
+                          System.out.println("File " + listOfFiles[i].getName());
+                        } else if (listOfFiles[i].isDirectory()) {
+                            content+="Directory " + listOfFiles[i].getName()+'\n';
+                          System.out.println("Directory " + listOfFiles[i].getName());
+                        }
+                      }
+                      System.out.println(content);
+                      to_cli.writeBytes(content+';');
+                      //to_cli.flush();
                 }
             }
 
